@@ -61,8 +61,12 @@ async function run() {
 
     // recent 3 get data
     app.get("/recentDonationRequest", async (req, res) => {
-      const recentDonationRequest = await createDonationRequest.find({}).sort({ _id: -1 }).limit(3).toArray();
-      res.send(recentDonationRequest)
+      const recentDonationRequest = await createDonationRequest
+        .find({})
+        .sort({ _id: -1 })
+        .limit(3)
+        .toArray();
+      res.send(recentDonationRequest);
     });
     // Create data
     app.post("/createDonationRequest", async (req, res) => {
@@ -94,18 +98,27 @@ async function run() {
       }
     });
 
-
     // DELETE Area
-      app.delete('/recentDonationRequest/:id', async (req, res) => {
-            const { id } = req.params;
+    app.delete("/recentDonationRequest/:id", async (req, res) => {
+      const { id } = req.params;
 
-            const result = await createDonationRequest.deleteOne({
-                _id: new ObjectId(id)
-            });
+      const result = await createDonationRequest.deleteOne({
+        _id: new ObjectId(id),
+      });
 
-            res.send(result);
-        });
+      res.send(result);
+    });
 
+    // Details
+    app.get("/myDonationRequest/:id", async (req, res) => {
+      const id = req.params.id;
+
+      const result = await createDonationRequest.findOne({
+        _id: new ObjectId(id),
+      });
+
+      res.send(result);
+    });
 
     // await client.db("admin").command({ ping: 1 });
     console.log(
