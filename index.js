@@ -1,7 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 dotenv.config();
 
@@ -10,7 +10,8 @@ const port = process.env.PORT || 5000;
 
 // midlewire
 app.use(express.json());
-app.use(cors({
+app.use(
+  cors({
     origin: process.env.CLIENT_URL,
     credentials: true,
   }),
@@ -26,40 +27,86 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+    const db = client.db("BloodAid");
+    const districtsCollection = db.collection("districts");
+    const upazilaCollection = db.collection("upazilas");
+    const userCollection = db.collection("user");
+    const createDonationRequest = db.collection("donationRequest");
 
-    const db = client.db('BloodAid');
-    const districtsCollection = db.collection('districts');
-    const upazilaCollection = db.collection('upazilas');
-    
     // ================= ROUTES =================
 
     // districts
-    app.get('/districts', async (req, res)=> {
+    app.get("/districts", async (req, res) => {
       const result = await districtsCollection.find().toArray();
       res.send(result);
-    })
-    
+    });
+
     // upazilas
-    app.get('/upazilas', async (req, res)=> {
+    app.get("/upazilas", async (req, res) => {
       const result = await upazilaCollection.find().toArray();
       res.send(result);
-    })
-    
+    });
 
+    // all users
+    app.get("/user", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    // donation request get data
+    app.get("/donationRequest", async (req, res) => {
+      const result = await createDonationRequest.find().toArray();
+      res.send(result);
+    });
+
+    // recent 3 get data
+    app.get("/recentDonationRequest", async (req, res) => {
+      const recentDonationRequest = await createDonationRequest.find({}).sort({ _id: -1 }).limit(3).toArray();
+      res.send(recentDonationRequest)
+    });
+    // Create data
+    app.post("/createDonationRequest", async (req, res) => {
+      const donationRequest = req.body;
+      const result = await createDonationRequest.insertOne(donationRequest);
+      res.send(result);
+    });
+
+    // update Profile
+    app.patch("/user/:id", async (req, res) => {
+      try {
+        const { id } = req.params;
+        const modifyProfile = req.body;
+
+        console.log("ID:", id);
+        console.log("Body:", modifyProfile);
+
+        const result = await userCollection.updateOne(
+          { _id: new ObjectId(id) },
+          { $set: modifyProfile },
+        );
+
+        console.log(result);
+
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+        res.status(500).send({ error: err.message });
+      }
+    });
 
     // await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!",);
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!",
+    );
   } finally {
     // await client.close();
   }
 }
 run().catch(console.dir);
 
-
 app.get("/", (req, res) => {
   res.send("Server is running");
 });
-
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
