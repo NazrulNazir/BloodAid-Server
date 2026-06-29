@@ -56,6 +56,7 @@ async function run() {
     // all Data dekha jabe
     app.get("/donationRequest", async (req, res) => {
       const result = await createDonationRequest.find().toArray();
+      console.log(result);
       res.send(result);
     });
 
