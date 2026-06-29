@@ -33,6 +33,7 @@ async function run() {
     const userCollection = db.collection("user");
     const createDonationRequest = db.collection("donationRequest");
 
+
     // ================= ROUTES =================
 
     // districts
@@ -50,14 +51,12 @@ async function run() {
     // all users
     app.get("/admin/allUser", async (req, res) => {
       const result = await userCollection.find().toArray();
-      console.log(result);
       res.send(result);
     });
 
-    // all Data dekha jabe
+    // all donation Request dekha jabe
     app.get("/donationRequest", async (req, res) => {
       const result = await createDonationRequest.find().toArray();
-      console.log(result);
       res.send(result);
     });
 
