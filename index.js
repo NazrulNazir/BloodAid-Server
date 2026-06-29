@@ -121,6 +121,22 @@ async function run() {
       }
     });
 
+    // status update
+    app.patch("/donation-request/status/:id", async (req, res) => {
+      const { id } = req.params;
+      const { donationStatus } = req.body;
+
+      const result = await createDonationRequest.updateOne(
+        { _id: new ObjectId(id) },
+        {
+          $set: {
+            donationStatus,
+          },
+        },
+      );
+
+      res.send(result);
+    });
 
     // DELETE Area
     app.delete("/recentDonationRequest/:id", async (req, res) => {
