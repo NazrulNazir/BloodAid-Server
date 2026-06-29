@@ -53,21 +53,58 @@ async function run() {
       res.send(result);
     });
 
-    // donation request get data
+    // all Data dekha jabe
     app.get("/donationRequest", async (req, res) => {
       const result = await createDonationRequest.find().toArray();
       res.send(result);
     });
 
+    // gmail match kora data gula dekha jabe
+    app.get("/donationRequest/:email", async (req, res) => {
+      const { email } = req.params;
+      const result = await createDonationRequest
+        .find({ requesterEmail: email })
+        .toArray();
+      res.send(result);
+    });
+
+    app.get("/donationRequest/status/:status", async (req, res) => {
+      const { status } = req.params;
+      const result = await createDonationRequest
+        .find({ donationStatus: status })
+        .toArray();
+      res.send(result);
+    });
+
     // recent 3 get data
-    app.get("/recentDonationRequest", async (req, res) => {
-      const recentDonationRequest = await createDonationRequest
-        .find({})
+    // app.get("/manageFacilities/:email", verifyToken, async (req, res) => {
+    //   const { email } = req.params;
+
+    //   const result = await facilityCollection.find({ email }).toArray();
+    //   res.send(result);
+    // });
+
+    // app.get("/recentDonationRequest", async (req, res) => {
+    //   const recentDonationRequest = await createDonationRequest
+    //     .find({})
+    //     .sort({ _id: -1 })
+    //     .limit(3)
+    //     .toArray();
+    //   res.send(recentDonationRequest);
+    // });
+
+    app.get("/recentDonationRequest/:email", async (req, res) => {
+      const { email } = req.params;
+
+      const result = await createDonationRequest
+        .find({ requesterEmail: email })
         .sort({ _id: -1 })
         .limit(3)
         .toArray();
-      res.send(recentDonationRequest);
+
+      res.send(result);
     });
+
     // Create data
     app.post("/createDonationRequest", async (req, res) => {
       const donationRequest = req.body;
