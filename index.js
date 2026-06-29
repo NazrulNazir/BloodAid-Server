@@ -48,9 +48,9 @@ async function run() {
     });
 
     // all users
-    app.get("/user", async (req, res) => {
+    app.get("/admin/allUser", async (req, res) => {
       const result = await userCollection.find().toArray();
-      console.log(result)
+      console.log(result);
       res.send(result);
     });
 
@@ -175,6 +175,25 @@ async function run() {
       );
 
       res.send(result);
+    });
+
+    // Admin can change status and role
+    app.patch("/users/:id", async (req, res) => {
+      try {
+        const { id } = req.params;
+        const updateData = req.body;
+        const result = await userCollection.updateOne(
+          { _id: new ObjectId(id) },
+          {
+            $set: updateData,
+          },
+        );
+        res.send(result);
+      } catch (err) {
+        res.status(500).send({
+          message: err.message,
+        });
+      }
     });
 
     // DELETE Area
