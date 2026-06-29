@@ -98,6 +98,30 @@ async function run() {
       }
     });
 
+    // my donation request page edit
+    app.patch("/donation-request/Edit/:id", async (req, res) => {
+      try {
+        const { id } = req.params;
+        const modifyProfile = req.body;
+
+        console.log("ID:", id);
+        console.log("Body:", modifyProfile);
+
+        const result = await createDonationRequest.updateOne(
+          { _id: new ObjectId(id) },
+          { $set: modifyProfile },
+        );
+
+        console.log(result);
+
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+        res.status(500).send({ error: err.message });
+      }
+    });
+
+
     // DELETE Area
     app.delete("/recentDonationRequest/:id", async (req, res) => {
       const { id } = req.params;
@@ -110,7 +134,7 @@ async function run() {
     });
 
     // Details
-    app.get("/myDonationRequest/:id", async (req, res) => {
+    app.get("/donation-request/:id", async (req, res) => {
       const id = req.params.id;
 
       const result = await createDonationRequest.findOne({
