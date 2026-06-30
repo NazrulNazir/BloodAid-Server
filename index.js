@@ -40,29 +40,49 @@ async function run() {
     );
 
     // middleware
+
     const verifyToken = async (req, res, next) => {
       const authHeader = req?.headers.authorization;
       if (!authHeader) {
         return res.status(401).json({ message: "Unauthorized" });
       }
       const token = authHeader.split(" ")[1];
-      if (!token) {
-        return res.status(401).json({ message: "Unauthorized" });
+      console.log('Berer sara token : ', token );
+
+      if(!token){
+         return res.status(401).json({ message: "Token Unauthorized" });
       }
+
       try {
         const { payload } = await jwtVerify(token, JWKS);
-        console.log(payload);
         req.user = payload;
+        console.log('Payload Successfull: ', payload);
         next();
-      } catch (error) {
-        console.log(error);
+      } catch (err) {
+        console.log(err);
         return res.status(403).json({ message: "Forbidden" });
       }
     };
 
-    // first
+    // const verifyToken = async (req, res, next) => {
+    //   const authHeader = req?.headers.authorization;
+    //   if (!authHeader) {
+    //     return res.status(401).json({ message: "Unauthorized" });
+    //   }
+    //   const token = authHeader.split(" ")[1];
+    //   if (!token) {
+    //     return res.status(401).json({ message: "Unauthorized" });
+    //   }
+    //   try {
+    //     const { payload } = await jwtVerify(token, JWKS);
+    //     req.user = payload;
+    //     next();
+    //   } catch (error) {
+    //     return res.status(403).json({ message: "Forbidden" });
+    //   }
+    // };
 
-    console.log(verifyToken);
+    // console.log(verifyToken);
 
     // ================= ROUTES =================
 
@@ -156,15 +176,12 @@ async function run() {
         const { id } = req.params;
         const modifyProfile = req.body;
 
-        console.log("ID:", id);
-        console.log("Body:", modifyProfile);
 
         const result = await userCollection.updateOne(
           { _id: new ObjectId(id) },
           { $set: modifyProfile },
         );
 
-        // console.log(result);
 
         res.send(result);
       } catch (err) {
@@ -178,19 +195,13 @@ async function run() {
         const { id } = req.params;
         const modifyProfile = req.body;
 
-        console.log("ID:", id);
-        // console.log("Body:", modifyProfile);
-
         const result = await createDonationRequest.updateOne(
           { _id: new ObjectId(id) },
           { $set: modifyProfile },
         );
 
-        // console.log(result);
-
         res.send(result);
       } catch (err) {
-        console.log(err);
         res.status(500).send({ error: err.message });
       }
     });
@@ -243,17 +254,14 @@ async function run() {
     });
 
     // Details
-   
-    app.get("/donation-request/:id", verifyToken,
-       async (req, res) => {
+
+    app.get("/donation-request/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
 
-      console.log("Donation ID:", id);
 
       const result = await createDonationRequest.findOne({
         _id: new ObjectId(id),
       });
-      console.log("Mongo Result:", result);
       res.send(result);
     });
 
