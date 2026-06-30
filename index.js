@@ -33,6 +33,38 @@ async function run() {
     const userCollection = db.collection("user");
     const createDonationRequest = db.collection("donationRequest");
 
+     // JWKS
+        const JWKS = createRemoteJWKSet(
+            new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
+        );
+
+     // middleware
+        const verifyToken = async (req, res, next) => {
+
+            const authHeader = req?.headers.authorization;
+
+            if (!authHeader) {
+                return res.status(401).json({ message: 'Unauthorized' });
+            }
+
+            const token = authHeader.split(" ")[1];
+
+            if (!token) {
+                return res.status(401).json({ message: 'Unauthorized' });
+            }
+
+            try {
+                const { payload } = await jwtVerify(token, JWKS);
+                req.user = payload;
+                next();
+            } catch (error) {
+                return res.status(403).json({ message: 'Forbidden' });
+            }
+        };
+
+        // first
+
+        console.log(verifyToken)
 
     // ================= ROUTES =================
 
@@ -49,19 +81,19 @@ async function run() {
     });
 
     // all users
-    app.get("/admin/allUser", async (req, res) => {
+    app.get("/admin/allUser", verifyToken,  async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
 
     // all donation Request dekha jabe
-    app.get("/donationRequest", async (req, res) => {
+    app.get("/donationRequest", verifyToken, async (req, res) => {
       const result = await createDonationRequest.find().toArray();
       res.send(result);
     });
 
     // gmail match kora data gula dekha jabe
-    app.get("/donationRequest/:email", async (req, res) => {
+    app.get("/donationRequest/:email", verifyToken, async (req, res) => {
       const { email } = req.params;
       const result = await createDonationRequest
         .find({ requesterEmail: email })
@@ -94,7 +126,7 @@ async function run() {
     //   res.send(recentDonationRequest);
     // });
 
-    app.get("/recentDonationRequest/:email", async (req, res) => {
+    app.get("/recentDonationRequest/:email", verifyToken, async (req, res) => {
       const { email } = req.params;
 
       const result = await createDonationRequest
@@ -206,7 +238,7 @@ async function run() {
     });
 
     // Details
-    app.get("/donation-request/:id", async (req, res) => {
+    app.get("/donation-request/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
 
       const result = await createDonationRequest.findOne({
