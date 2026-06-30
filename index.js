@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { createRemoteJWKSet, jwtVerify } = require("jose-cjs");
 
 dotenv.config();
 
@@ -33,38 +34,35 @@ async function run() {
     const userCollection = db.collection("user");
     const createDonationRequest = db.collection("donationRequest");
 
-     // JWKS
-        const JWKS = createRemoteJWKSet(
-            new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
-        );
+    // JWKS
+    const JWKS = createRemoteJWKSet(
+      new URL(`${process.env.CLIENT_URL}/api/auth/jwks`),
+    );
 
-     // middleware
-        const verifyToken = async (req, res, next) => {
+    // middleware
+    const verifyToken = async (req, res, next) => {
+      const authHeader = req?.headers.authorization;
+      if (!authHeader) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const token = authHeader.split(" ")[1];
+      if (!token) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      try {
+        const { payload } = await jwtVerify(token, JWKS);
+        console.log(payload);
+        req.user = payload;
+        next();
+      } catch (error) {
+        console.log(error);
+        return res.status(403).json({ message: "Forbidden" });
+      }
+    };
 
-            const authHeader = req?.headers.authorization;
+    // first
 
-            if (!authHeader) {
-                return res.status(401).json({ message: 'Unauthorized' });
-            }
-
-            const token = authHeader.split(" ")[1];
-
-            if (!token) {
-                return res.status(401).json({ message: 'Unauthorized' });
-            }
-
-            try {
-                const { payload } = await jwtVerify(token, JWKS);
-                req.user = payload;
-                next();
-            } catch (error) {
-                return res.status(403).json({ message: 'Forbidden' });
-            }
-        };
-
-        // first
-
-        console.log(verifyToken)
+    console.log(verifyToken);
 
     // ================= ROUTES =================
 
@@ -81,7 +79,7 @@ async function run() {
     });
 
     // all users
-    app.get("/admin/allUser", verifyToken,  async (req, res) => {
+    app.get("/admin/allUser", verifyToken, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
@@ -159,7 +157,7 @@ async function run() {
           { $set: modifyProfile },
         );
 
-        console.log(result);
+        // console.log(result);
 
         res.send(result);
       } catch (err) {
@@ -181,7 +179,7 @@ async function run() {
           { $set: modifyProfile },
         );
 
-        console.log(result);
+        // console.log(result);
 
         res.send(result);
       } catch (err) {
@@ -241,9 +239,13 @@ async function run() {
     app.get("/donation-request/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
 
+      console.log("Donation ID:", id);
+
       const result = await createDonationRequest.findOne({
         _id: new ObjectId(id),
       });
+
+      console.log("Mongo Result:", result);
 
       res.send(result);
     });
