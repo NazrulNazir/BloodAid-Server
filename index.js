@@ -107,23 +107,6 @@ async function run() {
       res.send(result);
     });
 
-    // recent 3 get data
-    // app.get("/manageFacilities/:email", verifyToken, async (req, res) => {
-    //   const { email } = req.params;
-
-    //   const result = await facilityCollection.find({ email }).toArray();
-    //   res.send(result);
-    // });
-
-    // app.get("/recentDonationRequest", async (req, res) => {
-    //   const recentDonationRequest = await createDonationRequest
-    //     .find({})
-    //     .sort({ _id: -1 })
-    //     .limit(3)
-    //     .toArray();
-    //   res.send(recentDonationRequest);
-    // });
-
     app.get("/recentDonationRequest/:email", verifyToken, async (req, res) => {
       const { email } = req.params;
 
