@@ -136,6 +136,30 @@ async function run() {
       res.send(result);
     });
 
+    // kkkkk
+    app.get("/donation-request/:email/:id", verifyToken, async (req, res) => {
+      try {
+        const { email, id } = req.params;
+
+        const result = await createDonationRequest.findOne({
+          _id: new ObjectId(id),
+          requesterEmail: email,
+        });
+
+        if (!result) {
+          return res.status(404).send({
+            message: "Donation request not found",
+          });
+        }
+
+        res.send(result);
+      } catch (err) {
+        res.status(500).send({
+          error: err.message,
+        });
+      }
+    });
+
     // Create data
     app.post("/createDonationRequest", async (req, res) => {
       const donationRequest = req.body;
@@ -244,9 +268,20 @@ async function run() {
       const result = await createDonationRequest.findOne({
         _id: new ObjectId(id),
       });
-
       console.log("Mongo Result:", result);
+      res.send(result);
+    });
 
+    // email match details page
+    app.get("/donation-request/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+
+      console.log("Donation ID:", id);
+
+      const result = await createDonationRequest.findOne({
+        _id: new ObjectId(id),
+      });
+      console.log("Mongo Result:", result);
       res.send(result);
     });
 
