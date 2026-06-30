@@ -131,7 +131,6 @@ async function run() {
 
         res.send(result);
       } catch (err) {
-        console.log(err);
         res.status(500).send({ error: err.message });
       }
     });
@@ -143,7 +142,7 @@ async function run() {
         const modifyProfile = req.body;
 
         console.log("ID:", id);
-        console.log("Body:", modifyProfile);
+        // console.log("Body:", modifyProfile);
 
         const result = await createDonationRequest.updateOne(
           { _id: new ObjectId(id) },
