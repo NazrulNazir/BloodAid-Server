@@ -260,20 +260,9 @@ async function run() {
     });
 
     // Details
-    app.get("/donation-request/:id", verifyToken, async (req, res) => {
-      const id = req.params.id;
-
-      console.log("Donation ID:", id);
-
-      const result = await createDonationRequest.findOne({
-        _id: new ObjectId(id),
-      });
-      console.log("Mongo Result:", result);
-      res.send(result);
-    });
-
-    // email match details page
-    app.get("/donation-request/:id", verifyToken, async (req, res) => {
+   
+    app.get("/donation-request/:id", verifyToken,
+       async (req, res) => {
       const id = req.params.id;
 
       console.log("Donation ID:", id);
