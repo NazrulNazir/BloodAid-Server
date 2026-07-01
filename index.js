@@ -87,6 +87,25 @@ async function run() {
 
     // ================= ROUTES =================
 
+    app.get("/public/stats", async (req, res) => {
+      const totalDonor = await userCollection.countDocuments();
+
+      const totalRequest = await createDonationRequest.countDocuments();
+
+      const funding = await fundingDataCollection.find().toArray();
+
+      const totalFunding = funding.reduce(
+        (sum, item) => sum + Number(item.amount),
+        0,
+      );
+
+      res.send({
+        totalDonor,
+        totalRequest,
+        totalFunding,
+      });
+    });
+
     /// Search Donor
     app.get("/search-donors", async (req, res) => {
       try {
