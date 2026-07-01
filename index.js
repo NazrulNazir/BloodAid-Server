@@ -33,6 +33,7 @@ async function run() {
     const upazilaCollection = db.collection("upazilas");
     const userCollection = db.collection("user");
     const createDonationRequest = db.collection("donationRequest");
+    const fundingDataCollection = db.collection("fundingData");
 
     // JWKS
     const JWKS = createRemoteJWKSet(
@@ -47,16 +48,16 @@ async function run() {
         return res.status(401).json({ message: "Unauthorized" });
       }
       const token = authHeader.split(" ")[1];
-      console.log('Berer sara token : ', token );
+      console.log("Berer sara token : ", token);
 
-      if(!token){
-         return res.status(401).json({ message: "Token Unauthorized" });
+      if (!token) {
+        return res.status(401).json({ message: "Token Unauthorized" });
       }
 
       try {
         const { payload } = await jwtVerify(token, JWKS);
         req.user = payload;
-        console.log('Payload Successfull: ', payload);
+        console.log("Payload Successfull: ", payload);
         next();
       } catch (err) {
         console.log(err);
@@ -86,6 +87,30 @@ async function run() {
 
     // ================= ROUTES =================
 
+    /// Search Donor
+    app.get("/search-donors", async (req, res) => {
+      try {
+        const { bloodGroup, district, upazila } = req.query;
+
+        const query = {
+          role: "Donor",
+          status: "active",
+        };
+
+        if (bloodGroup) query.bloodGroup = bloodGroup;
+        if (district) query.district = district;
+        if (upazila) query.upazila = upazila;
+
+        const result = await userCollection.find(query).toArray();
+
+        res.send(result);
+      } catch (err) {
+        res.status(500).send({
+          message: err.message,
+        });
+      }
+    });
+
     // districts
     app.get("/districts", async (req, res) => {
       const result = await districtsCollection.find().toArray();
@@ -95,6 +120,12 @@ async function run() {
     // upazilas
     app.get("/upazilas", async (req, res) => {
       const result = await upazilaCollection.find().toArray();
+      res.send(result);
+    });
+
+    // funcing
+    app.get("/funding", verifyToken, async (req, res) => {
+      const result = await fundingDataCollection.find().toArray();
       res.send(result);
     });
 
@@ -176,12 +207,10 @@ async function run() {
         const { id } = req.params;
         const modifyProfile = req.body;
 
-
         const result = await userCollection.updateOne(
           { _id: new ObjectId(id) },
           { $set: modifyProfile },
         );
-
 
         res.send(result);
       } catch (err) {
@@ -257,7 +286,6 @@ async function run() {
 
     app.get("/donation-request/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
-
 
       const result = await createDonationRequest.findOne({
         _id: new ObjectId(id),
