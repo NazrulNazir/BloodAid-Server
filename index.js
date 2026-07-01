@@ -140,7 +140,7 @@ async function run() {
     });
 
     // kkkkk
-    app.get("/donation-request/:email/:id", verifyToken, async (req, res) => {
+    app.get("/donation-request/:email/:id", async (req, res) => {
       try {
         const { email, id } = req.params;
 
